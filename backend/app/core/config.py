@@ -22,6 +22,9 @@ class Settings(BaseSettings):
     CHROMA_HOST: str = "localhost"
     CHROMA_PORT: int = 8000
 
+    # Gemini API Settings
+    GEMINI_API_KEY: Union[str, None] = None
+
     model_config = SettingsConfigDict(
         case_sensitive=True,
         env_file=".env",

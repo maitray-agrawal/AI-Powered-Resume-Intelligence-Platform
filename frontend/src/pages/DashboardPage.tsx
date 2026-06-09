@@ -2,6 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { useApi } from '../hooks/useApi';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+  BarChart,
+  Bar,
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  Radar
+} from 'recharts';
 
 interface Candidate {
   id: string;
@@ -56,12 +72,16 @@ export const DashboardPage: React.FC = () => {
   });
 
   const { data: systemInfo, request: getSystemInfo } = useApi();
+  const { data: analyticsData, request: getAnalytics } = useApi();
 
   useEffect(() => {
     getSystemInfo('get', '/info').catch(() => {
       console.log('Backend API offline. Operating in fallback mock mode.');
     });
-  }, [getSystemInfo]);
+    getAnalytics('get', '/analytics/dashboard').catch(() => {
+      console.log('Backend analytics offline. Operating in fallback mock mode.');
+    });
+  }, [getSystemInfo, getAnalytics]);
 
   const handleAddNewCandidate = (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,6 +107,38 @@ export const DashboardPage: React.FC = () => {
       c.role.toLowerCase().includes(searchQuery.toLowerCase()) ||
       c.targetRole.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const fallbackAnalytics = {
+    ats_score_history: [
+      { date: '2026-06-01', score: 70 },
+      { date: '2026-06-03', score: 75 },
+      { date: '2026-06-05', score: 82 },
+      { date: '2026-06-07', score: 80 },
+      { date: '2026-06-09', score: 88 }
+    ],
+    jd_match_history: [
+      { role: 'Frontend Architect', score: 68 },
+      { role: 'Fullstack Engineer', score: 75 },
+      { role: 'Lead FastAPI Dev', score: 89 },
+      { role: 'Cloud DevOps Eng', score: 52 }
+    ],
+    skill_gaps: [
+      { skill: 'Docker', frequency: 8 },
+      { skill: 'AWS Solutions', frequency: 6 },
+      { skill: 'Kubernetes', frequency: 5 },
+      { skill: 'TypeScript', frequency: 4 },
+      { skill: 'PostgreSQL', frequency: 3 }
+    ],
+    agent_scores: [
+      { agent: 'ATS Expert', score: 85 },
+      { agent: 'Recruiter', score: 90 },
+      { agent: 'Resume Reviewer', score: 88 },
+      { agent: 'Career Advisor', score: 82 }
+    ]
+  };
+
+  const analytics = analyticsData || fallbackAnalytics;
+
 
   return (
     <div className="flex h-screen w-full bg-surface text-on-surface font-body-md overflow-hidden text-left">
@@ -302,6 +354,79 @@ export const DashboardPage: React.FC = () => {
                   <div className="w-5 h-5 rounded-full bg-tertiary-fixed-dim border border-white"></div>
                 </div>
                 <span className="text-[11px] font-medium text-on-surface-variant">Scheduled Today: 4</span>
+              </div>
+            </Card>
+          </div>
+
+          {/* Analytics Charts Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-md">
+            {/* ATS Score Timeline (Area Chart) */}
+            <Card className="p-md h-80 flex flex-col justify-between">
+              <h5 className="font-label-md text-primary uppercase tracking-wider font-semibold mb-sm">ATS Score Trend</h5>
+              <div className="w-full h-60">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={analytics.ats_score_history} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.8}/>
+                        <stop offset="95%" stopColor="#4f46e5" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                    <XAxis dataKey="date" stroke="#94a3b8" fontSize={11} tickLine={false} />
+                    <YAxis domain={[0, 100]} stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} />
+                    <Tooltip contentStyle={{ backgroundColor: '#ffffff', borderRadius: '8px', border: '1px solid #cbd5e1' }} />
+                    <Area type="monotone" dataKey="score" stroke="#4f46e5" fillOpacity={1} fill="url(#colorScore)" strokeWidth={2} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </Card>
+
+            {/* JD Match History (Bar Chart) */}
+            <Card className="p-md h-80 flex flex-col justify-between">
+              <h5 className="font-label-md text-primary uppercase tracking-wider font-semibold mb-sm">Role Matching Analysis</h5>
+              <div className="w-full h-60">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={analytics.jd_match_history} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                    <XAxis dataKey="role" stroke="#94a3b8" fontSize={11} tickLine={false} />
+                    <YAxis domain={[0, 100]} stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} />
+                    <Tooltip contentStyle={{ backgroundColor: '#ffffff', borderRadius: '8px', border: '1px solid #cbd5e1' }} />
+                    <Bar dataKey="score" fill="#10b981" radius={[4, 4, 0, 0]} barSize={30} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </Card>
+
+            {/* Skill Gaps (Bar Chart) */}
+            <Card className="p-md h-80 flex flex-col justify-between">
+              <h5 className="font-label-md text-primary uppercase tracking-wider font-semibold mb-sm">Identified Skill Gaps</h5>
+              <div className="w-full h-60">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={analytics.skill_gaps} layout="vertical" margin={{ top: 10, right: 30, left: 20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" />
+                    <XAxis type="number" stroke="#94a3b8" fontSize={11} tickLine={false} />
+                    <YAxis dataKey="skill" type="category" stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} />
+                    <Tooltip contentStyle={{ backgroundColor: '#ffffff', borderRadius: '8px', border: '1px solid #cbd5e1' }} />
+                    <Bar dataKey="frequency" fill="#f59e0b" radius={[0, 4, 4, 0]} barSize={15} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </Card>
+
+            {/* Agent Scores (Radar Chart) */}
+            <Card className="p-md h-80 flex flex-col justify-between">
+              <h5 className="font-label-md text-primary uppercase tracking-wider font-semibold mb-sm">Multi-Agent Performance</h5>
+              <div className="w-full h-60">
+                <ResponsiveContainer width="100%" height="100%">
+                  <RadarChart cx="50%" cy="50%" outerRadius="75%" data={analytics.agent_scores}>
+                    <PolarGrid stroke="#e2e8f0" />
+                    <PolarAngleAxis dataKey="agent" stroke="#94a3b8" fontSize={11} />
+                    <PolarRadiusAxis angle={30} domain={[0, 100]} stroke="#cbd5e1" fontSize={9} />
+                    <Radar name="Agent Rating" dataKey="score" stroke="#6366f1" fill="#6366f1" fillOpacity={0.3} />
+                    <Tooltip contentStyle={{ backgroundColor: '#ffffff', borderRadius: '8px', border: '1px solid #cbd5e1' }} />
+                  </RadarChart>
+                </ResponsiveContainer>
               </div>
             </Card>
           </div>
