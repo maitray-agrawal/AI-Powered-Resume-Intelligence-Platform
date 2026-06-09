@@ -36,6 +36,27 @@ class ATSEngineService:
         findings = keyword_findings + section_findings + length_findings
         suggestions = keyword_suggestions + section_suggestions + length_suggestions
 
+        # Trigger MLflow logging
+        try:
+            from app.services.mlflow_service import MLflowTrackingService
+            MLflowTrackingService.log_ats_score(
+                resume_name=resume.name or "Unknown",
+                overall_score=overall_score,
+                metrics={
+                    "keyword_score": round(keyword_score, 1),
+                    "section_score": round(section_score, 1),
+                    "length_score": round(length_score, 1)
+                },
+                params={
+                    "skills_count": len(resume.skills),
+                    "job_keywords_count": len(job_keywords) if job_keywords else 0
+                },
+                findings=findings,
+                suggestions=suggestions
+            )
+        except Exception as mlflow_err:
+            pass
+
         return {
             "keyword_score": round(keyword_score, 1),
             "section_score": round(section_score, 1),

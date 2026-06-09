@@ -25,6 +25,10 @@ class Settings(BaseSettings):
     # Gemini API Settings
     GEMINI_API_KEY: Union[str, None] = None
 
+    # MLflow Settings
+    MLFLOW_TRACKING_URI: str = "sqlite:///mlflow.db"
+    MLFLOW_EXPERIMENT_NAME: str = "Resume_Intelligence_Platform"
+
     model_config = SettingsConfigDict(
         case_sensitive=True,
         env_file=".env",

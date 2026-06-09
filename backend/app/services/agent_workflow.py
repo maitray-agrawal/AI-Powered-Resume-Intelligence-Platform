@@ -179,6 +179,14 @@ class ResumeAgentWorkflowService:
                 "critical_improvements": ["List metrics in achievements", "Integrate cloud infrastructure items"],
                 "fit_percentage": 85.0
             }
+            try:
+                from app.services.mlflow_service import MLflowTrackingService
+                MLflowTrackingService.log_agent_workflow(
+                    workflow_result=state,
+                    job_description_length=len(jd)
+                )
+            except Exception as mlflow_err:
+                pass
             return state
 
         # Compile and execute LangGraph
@@ -200,6 +208,14 @@ class ResumeAgentWorkflowService:
 
             app = workflow.compile()
             final_state = app.invoke(initial_state)
+            try:
+                from app.services.mlflow_service import MLflowTrackingService
+                MLflowTrackingService.log_agent_workflow(
+                    workflow_result=final_state,
+                    job_description_length=len(jd)
+                )
+            except Exception as mlflow_err:
+                pass
             return final_state
         except Exception as e:
             logger.error(f"Error compiling/running LangGraph workflow: {e}")

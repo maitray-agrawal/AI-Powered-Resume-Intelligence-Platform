@@ -6,7 +6,6 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.models import User, Resume, ResumeVersion
-from app.services.parser import ResumeParser
 from app.services.vector_db import vector_db_service
 
 
@@ -59,9 +58,11 @@ class ResumeService:
                 detail=f"Failed to write file locally: {str(e)}"
             )
 
-        # Extract text from file
+        # Extract and parse structure from file
         try:
-            raw_text = ResumeParser.extract_text(file_path, file.content_type)
+            from app.services.parser_service import ResumeParserService
+            parsed_data = ResumeParserService.parse_resume(file_path)
+            raw_text = ResumeParserService.extract_text(file_path)
         except Exception as e:
             if os.path.exists(file_path):
                 os.remove(file_path)
@@ -93,7 +94,8 @@ class ResumeService:
                 raw_text=raw_text,
                 structured_data={
                     "file_size_bytes": os.path.getsize(file_path),
-                    "character_count": len(raw_text)
+                    "character_count": len(raw_text),
+                    "parsed_structure": parsed_data
                 }
             )
             db.add(version)

@@ -62,6 +62,28 @@ class JDMatcherService:
         match_percentage = ((resume_similarity * 0.5) + (skill_similarity * 0.5)) * 100.0
         match_percentage = max(0.0, min(100.0, match_percentage))
 
+        # Determine matched and missing skills
+        resume_skills_lower = {s.lower() for s in resume_skills}
+        matched = [s for s in job_description_skills if s.lower() in resume_skills_lower]
+        missing = [s for s in job_description_skills if s.lower() not in resume_skills_lower]
+
+        # Trigger MLflow logging
+        try:
+            from app.services.mlflow_service import MLflowTrackingService
+            MLflowTrackingService.log_jd_match(
+                resume_skills_count=len(resume_skills),
+                jd_skills_count=len(job_description_skills),
+                overall_score=round(match_percentage, 2),
+                metrics={
+                    "resume_similarity": round(resume_similarity, 4),
+                    "skill_similarity": round(skill_similarity, 4)
+                },
+                matched_skills=matched,
+                missing_skills=missing
+            )
+        except Exception as mlflow_err:
+            pass
+
         return {
             "resume_similarity": round(resume_similarity, 4),
             "skill_similarity": round(skill_similarity, 4),

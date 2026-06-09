@@ -1,439 +1,269 @@
-<div align="center">
+# AI-Powered Resume Intelligence Platform
 
-# 🚀 AI-Powered Resume Intelligence Platform
+![Project Banner](docs/images/banner.png)
 
-**A production-grade, full-stack AI platform that parses, scores, and intelligently analyzes resumes using multi-agent LLM workflows, semantic search, and real-time analytics.**
-
-[![Python](https://img.shields.io/badge/Python-3.12+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.111+-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
-[![React](https://img.shields.io/badge/React-18+-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5+-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://typescriptlang.org)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16+-336791?style=for-the-badge&logo=postgresql&logoColor=white)](https://postgresql.org)
-[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://docker.com)
-
-[Features](#-features) • [Tech Stack](#-tech-stack) • [Quick Start](#-quick-start) • [API Reference](#-api-reference) • [Architecture](#-architecture) • [Testing](#-testing)
-
-</div>
+An enterprise-grade, multi-agent AI resume parsing, ATS scoring, semantic job description matching, and RAG Q&A chat platform. Empowered by Google Gemini, LangGraph, and ChromaDB.
 
 ---
 
-## ✨ Features
+## Overview
 
-### 🔍 Resume Parsing
-- **Multi-format support**: PDF (via `pdfplumber` + `PyMuPDF`) and DOCX (`python-docx`)
-- **NLP extraction** using `spaCy`: Name, Email, Phone, Skills, Education, Projects, Experience
-- Returns structured JSON with confidence scoring
+The **AI-Powered Resume Intelligence Platform** is a state-of-the-art developer and recruitment toolkit designed to automate resume analysis and candidate-job matching. By combining traditional heuristic parsing with advanced LLM agents and semantic vector databases, the platform delivers high-fidelity compliance scoring, resume rewriting suggestions, and context-aware candidate Q&A.
 
-### 📊 ATS Scoring Engine
-- **Keyword match score**: Compares resume keywords against job description terms
-- **Section completeness score**: Checks for presence of standard resume sections
-- **Length & formatting score**: Evaluates word count and readability tiers
-- Returns a composite 0–100 ATS score with actionable suggestions
+## Problem Statement
 
-### 🤝 Semantic JD Matcher
-- Uses `sentence-transformers` model `all-MiniLM-L6-v2` for dense vector embeddings
-- Calculates **resume-to-JD similarity** and **skill overlap percentage**
-- Returns match percentage with matched and missing skills breakdown
+Traditional Applicant Tracking Systems (ATS) rely on rigid keyword matching, frequently rejecting highly qualified candidates due to minor formatting discrepancies or differences in terminology. At the same time, recruiters spend hours manual reading resumes to assess fit against a job description. 
 
-### 🤖 Gemini AI Integration
-- **Resume Improvement**: Specific bullet-by-bullet enhancement suggestions
-- **Full Resume Rewrite**: Professionally rewritten resume in target format
-- **Interview Question Generator**: Role-specific question bank from JD
-- **Cover Letter Generator**: Tailored, personalized cover letters
-
-### 🧠 Resume RAG System
-- **LangChain** pipeline for document chunking and retrieval
-- **ChromaDB** vector store for persistent semantic embeddings
-- **Gemini** as the generation backend for context-aware answers
-- `/ingest` endpoint to embed resumes; `/chat` endpoint for Q&A
-
-### 🕸️ LangGraph Multi-Agent Workflow
-Four specialized AI agents collaborate in a directed graph:
-
-| Agent | Role | Output |
-|-------|------|--------|
-| **ATS Expert** | Analyzes keyword density & formatting | `score`, `issues`, `suggestions` |
-| **Recruiter** | Evaluates cultural & role fit | `hiring_verdict`, `fit_rating` |
-| **Resume Reviewer** | Critiques writing quality | `writing_score`, `improvements` |
-| **Career Advisor** | Recommends career growth paths | `recommended_roles`, `gap_analysis` |
-
-Generates a **consolidated report** with `fit_percentage` and hiring summary, stored in PostgreSQL.
-
-### 📈 Dashboard Analytics
-Real-time analytics charts powered by **Recharts**:
-- **ATS Score Trend** — Area chart showing score progression over time
-- **Role Match Analysis** — Bar chart comparing fit % across job descriptions
-- **Skill Gap Radar** — Horizontal bar chart of most frequently missing skills
-- **Multi-Agent Scores** — Radar chart visualizing all 4 agent evaluation scores
+This platform bridges the gap by:
+1. **Intelligent Parsing**: Bypassing format limitations to extract sections, skills, and histories accurately.
+2. **Semantic Matching**: Utilizing dense vector representations to match resumes against job descriptions based on conceptual alignment rather than exact keywords.
+3. **Multi-Agent Evaluation**: Orchestrating a team of dedicated AI agents (ATS Expert, Recruiter, Reviewer, and Advisor) to conduct a holistic, multi-perspective evaluation.
+4. **Contextual Chat (RAG)**: Allowing recruiters to "talk to the resume" in real-time, asking specific questions about experience, education, or achievements.
 
 ---
 
-## 🛠 Tech Stack
+## Architecture
+
+```mermaid
+graph TD
+    User([User Client]) -->|React SPA| Frontend[Vite Frontend]
+    Frontend -->|REST API| Backend[FastAPI App]
+    
+    subgraph Storage & Indexing
+        Backend -->|SQL| DB[(PostgreSQL)]
+        Backend -->|gRPC| VectorDB[(ChromaDB)]
+    end
+    
+    subgraph Cognitive Loop
+        Backend -->|Gemini API| Gemini[Gemini 2.5 Flash]
+        Backend -->|StateGraph| LangGraph[LangGraph Agents]
+    end
+    
+    subgraph Operations
+        Backend -->|Telemetry| MLflow[MLflow Tracker]
+    end
+```
+
+For a comprehensive breakdown of sequence charts, data flows, and sub-systems, refer to the [System Architecture Documentation](docs/architecture.md).
+
+---
+
+## Key Features
+
+1. **Resume Parser**: Direct PDF & DOCX text extraction using spaCy NER models and structured regex heuristics.
+2. **ATS Checker**: Weighted evaluation scoring based on keyword match density (40%), section completeness (40%), and length constraints (20%).
+3. **Semantic JD Matcher**: Dense vector embedding comparisons utilizing `sentence-transformers` for conceptual alignment matching.
+4. **Resume Rewriter**: Generates tailored bullet points and full resume rewrites target-matched to job descriptions.
+5. **Interview Generator**: Evaluates candidates to generate targeted interview questions based on missing skills and experience.
+6. **Skill Gap Analyzer**: Automatically extracts missing technologies and lists actionable learning goals.
+7. **Career Roadmap**: LangGraph Career Advisor agent suggests target certifications, growth paths, and roles.
+8. **RAG Chatbot**: Interactive chatbot using LangChain ChromaDB retriever and Gemini models for contextual Q&A.
+9. **Multi-Agent Workflow**: Sequential execution of ATS Expert, Recruiter, Reviewer, and Advisor agents in a LangGraph StateGraph, compiling a consolidated report.
+10. **Recruiter Simulator**: Evaluates candidate hiring verdicts (`Shortlist` / `Consider` / `Reject`) with explicit rationales.
+11. **Analytics Dashboard**: Dynamic Recharts dashboard charting historical ATS trendlines, matching percentages, missing skill frequencies, and multi-agent ratings.
+12. **Dockerization**: Single-command startup utilizing docker-compose for multi-service environments.
+13. **MLflow Telemetry**: Logs parameters, scores, RAG queries, and agent outputs to an MLflow tracking server for monitoring.
+
+---
+
+## Tech Stack
 
 ### Backend
-| Layer | Technology |
-|-------|-----------|
-| API Framework | FastAPI 0.111+ |
-| ORM | SQLAlchemy 2.0 |
-| Relational DB | PostgreSQL 16 |
-| Vector DB | ChromaDB 0.5 |
-| Auth | JWT (python-jose + passlib) |
-| PDF Parsing | pdfplumber, PyMuPDF |
-| NLP | spaCy 3.7 |
-| Embeddings | sentence-transformers (`all-MiniLM-L6-v2`) |
-| LLM | Google Gemini (google-genai) |
-| RAG Pipeline | LangChain + langchain-chroma + langchain-google-genai |
-| Agent Orchestration | LangGraph |
-| Migrations | Alembic |
-| Testing | pytest + FastAPI TestClient |
+- **Framework**: FastAPI (Asynchronous API gateway)
+- **Database**: PostgreSQL (Structured persistent models)
+- **Vector Database**: ChromaDB (High-dimensional vector indexing)
+- **Agent Orchestrator**: LangGraph (Directed state graph loops)
+- **LLM Integrations**: Google Generative AI (Gemini 2.5 Flash, Google Embeddings)
+- **Local ML/NLP**: Sentence-Transformers (`all-MiniLM-L6-v2`), spaCy (`en_core_web_sm`)
+- **Telemetry**: MLflow (Run tracking and parameters logging)
 
 ### Frontend
-| Layer | Technology |
-|-------|-----------|
-| Framework | React 18 + TypeScript 5 |
-| Build Tool | Vite 5 |
-| Styling | TailwindCSS 3 |
-| Charts | Recharts 2.12 |
-| HTTP Client | Axios via custom `useApi` hook |
-| Design System | Material Symbols + custom design tokens |
-
-### Infrastructure
-| Service | Technology |
-|---------|-----------|
-| Containerization | Docker + Docker Compose |
-| Reverse Proxy | Nginx (frontend) |
-| Python Runtime | Python 3.12+ |
-| Node Runtime | Node 20+ |
+- **Framework**: React 18, TypeScript, Vite
+- **Styling**: TailwindCSS
+- **Visualizations**: Recharts (Interactive SVG charting engine)
 
 ---
 
-## 📁 Project Structure
+## Folder Structure
 
 ```
-AI-Powered-Resume-Intelligence-Platform/
-├── backend/                          # FastAPI application
+d:\ATS checker\
+├── backend/                    # FastAPI python code
 │   ├── app/
-│   │   ├── api/
-│   │   │   └── v1/
-│   │   │       ├── endpoints/
-│   │   │       │   ├── resume.py     # File upload & storage
-│   │   │       │   ├── ats.py        # ATS scoring
-│   │   │       │   ├── jd_matcher.py # Semantic JD matching
-│   │   │       │   ├── llm.py        # Gemini AI features
-│   │   │       │   ├── rag.py        # RAG ingest & chat
-│   │   │       │   ├── agents.py     # LangGraph workflow
-│   │   │       │   └── analytics.py  # Dashboard metrics
-│   │   │       └── router.py
-│   │   ├── core/
-│   │   │   ├── config.py             # Pydantic Settings
-│   │   │   ├── database.py           # DB session factory
-│   │   │   └── security.py           # JWT utilities
-│   │   ├── models/
-│   │   │   └── __init__.py           # SQLAlchemy ORM models
-│   │   ├── schemas/                  # Pydantic request/response models
-│   │   ├── services/                 # Business logic layer
-│   │   │   ├── parser.py             # Resume text extraction
-│   │   │   ├── ats_service.py        # ATS scoring engine
-│   │   │   ├── jd_matcher.py         # Sentence-transformer matcher
-│   │   │   ├── llm_service.py        # Gemini API wrapper
-│   │   │   ├── rag_service.py        # LangChain RAG pipeline
-│   │   │   ├── agent_workflow.py     # LangGraph multi-agent graph
-│   │   │   └── analytics.py          # Analytics aggregations
-│   │   ├── database.py               # SQLAlchemy Base + engine
-│   │   └── main.py                   # FastAPI app entrypoint
-│   ├── alembic/                      # Database migrations
-│   ├── tests/                        # 31 pytest tests across 8 files
-│   └── requirements.txt
-│
-├── frontend/                         # React application
+│   │   ├── api/v1/endpoints/   # Router endpoints
+│   │   ├── core/               # App configuration, security, DB connection
+│   │   ├── models/             # SQLAlchemy schemas
+│   │   ├── schemas/            # Pydantic models
+│   │   └── services/           # Business logic & AI pipelines
+│   │       ├── mlflow_service.py # MLflow tracking handlers
+│   │       └── agent_workflow.py # LangGraph agent structures
+│   ├── alembic/                # DB migration versions
+│   └── tests/                  # Pytest test suite
+├── frontend/                   # React frontend application
 │   ├── src/
-│   │   ├── components/
-│   │   │   └── ui/                   # Button, Card components
-│   │   ├── hooks/
-│   │   │   └── useApi.ts             # Typed API hook
-│   │   ├── pages/
-│   │   │   ├── LandingPage.tsx       # Marketing landing page
-│   │   │   └── DashboardPage.tsx     # Main dashboard + Recharts
-│   │   ├── services/
-│   │   │   └── api.ts                # Axios base client
-│   │   └── App.tsx                   # Router setup
-│   ├── package.json
-│   └── vite.config.ts
-│
-├── docker/
-│   ├── backend/
-│   │   ├── Dockerfile
-│   │   └── entrypoint.sh
-│   └── frontend/
-│       ├── Dockerfile
-│       └── nginx.conf
-│
-├── docs/
-│   ├── architecture.md
-│   ├── api_spec.md
-│   └── database_schema.md
-│
-├── docker-compose.yml
-├── .env.example
-└── README.md
+│   │   ├── pages/              # Landing page & Dashboard
+│   │   ├── services/           # Backend API connector
+│   │   └── components/ui/      # Custom styled components
+│   └── vercel.json             # Vercel SPA routing
+├── docker/                     # Dockerfiles & scripts
+│   ├── backend/                # Dockerfile and startup scripts
+│   └── frontend/               # Dockerfile and Nginx setup
+├── docs/                       # Specifications, reports & architectures
+│   └── images/                 # Banner assets
+├── docker-compose.yml          # Container configuration orchestrator
+└── railway.json                # Railway backend deploy recipe
 ```
 
 ---
 
-## ⚡ Quick Start
+## Installation & Setup
 
 ### Prerequisites
-- **Python 3.12+**
-- **Node.js 20+**
-- **Docker & Docker Compose** (for full stack deployment)
-- **PostgreSQL** (local setup only)
-- **Google Gemini API Key** → [Get one here](https://aistudio.google.com/app/apikey)
+- Python 3.12+
+- Node.js 18+
+- Docker & Docker Compose
+- PostgreSQL (Local or Cloud instance)
 
----
-
-### Option A — Docker Compose (Recommended)
-
-Spins up PostgreSQL, ChromaDB, Backend, and Frontend in one command:
-
+### 1. Environment Configuration
+Copy the environment template and configure your local variables:
 ```bash
-# 1. Clone the repository
-git clone https://github.com/maitray-agrawal/AI-Powered-Resume-Intelligence-Platform.git
-cd AI-Powered-Resume-Intelligence-Platform
-
-# 2. Configure environment
-cp .env.example .env
-# Edit .env and add your GEMINI_API_KEY
-
-# 3. Build and start all services
-docker compose up --build
+copy .env.example .env
+```
+Fill in your `GEMINI_API_KEY`, `POSTGRES_PASSWORD`, and generate a secure `SECRET_KEY`:
+```bash
+python -c "import secrets; print(secrets.token_hex(32))"
 ```
 
-| Service | URL |
-|---------|-----|
-| Frontend Dashboard | http://localhost |
-| Backend API Docs (Swagger) | http://localhost:8080/docs |
-| Backend API Docs (ReDoc) | http://localhost:8080/redoc |
-| ChromaDB | http://localhost:8000/api/v1/heartbeat |
-| PostgreSQL | localhost:5432 |
+### 2. Local Setup (Without Docker)
 
----
-
-### Option B — Local Development
-
-#### Backend Setup
-
+#### Backend:
 ```bash
 cd backend
-
-# Create and activate virtual environment
 python -m venv .venv
-
-# Windows
 .venv\Scripts\activate
-# macOS / Linux
-source .venv/bin/activate
-
-# Install dependencies
 pip install -r requirements.txt
-
-# Download spaCy language model
 python -m spacy download en_core_web_sm
-
-# Configure environment variables
-cp ../.env.example ../.env
-# Edit .env with your database credentials and GEMINI_API_KEY
-
-# Run database migrations
 alembic upgrade head
-
-# Start the development server
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8080
 ```
 
-#### Frontend Setup
-
+#### Frontend:
 ```bash
-cd frontend
-
-# Install dependencies
+cd ../frontend
 npm install
-
-# Start development server
 npm run dev
 ```
 
-Frontend runs at `http://localhost:5173` by default.
-
----
-
-## 🔑 Environment Variables
-
-Create a `.env` file at the project root by copying `.env.example`:
-
+### 3. Containerized Setup (Docker Compose)
+To start all services (Backend, Frontend, PostgreSQL, ChromaDB) with a single command:
 ```bash
-cp .env.example .env
+docker compose up --build
 ```
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `DATABASE_URL` | PostgreSQL connection string | `postgresql://postgres:postgres@localhost:5432/resume_intelligence` |
-| `POSTGRES_USER` | Database user | `postgres` |
-| `POSTGRES_PASSWORD` | Database password | `postgres` |
-| `POSTGRES_DB` | Database name | `resume_intelligence` |
-| `CHROMA_HOST` | ChromaDB host | `localhost` |
-| `CHROMA_PORT` | ChromaDB port | `8000` |
-| `GEMINI_API_KEY` | Google Gemini API key | *(required for AI features)* |
-| `SECRET_KEY` | JWT signing secret | *(generate a secure random key)* |
-| `VITE_API_URL` | Frontend API base URL | `http://localhost:8080/api/v1` |
+Ensure your `.env` contains your active `GEMINI_API_KEY` before starting.
 
 ---
 
-## 📡 API Reference
+## API Documentation
 
-Base URL: `http://localhost:8080/api/v1`
+FastAPI automatically generates interactive documentation. Once the backend is running, visit:
+- **Swagger UI**: http://localhost:8080/docs
+- **ReDoc**: http://localhost:8080/redoc
 
-Interactive docs available at `/docs` (Swagger UI) and `/redoc` (ReDoc).
+### Endpoint Index
 
-### Resume Endpoints
 | Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/resume/upload` | Upload PDF or DOCX resume file |
-
-### ATS Scoring
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/ats/score` | Score a parsed resume JSON against keywords |
-
-### JD Matching
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/jd-matcher/match` | Semantic similarity match between resume and JD |
-
-### Gemini LLM Features
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/llm/improve` | Get improvement suggestions for resume |
-| `POST` | `/llm/rewrite` | Get a fully rewritten version of the resume |
-| `POST` | `/llm/interview-questions` | Generate role-specific interview questions |
-| `POST` | `/llm/cover-letter` | Generate a tailored cover letter |
-
-### RAG System
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/rag/ingest` | Chunk, embed and store resume in ChromaDB |
-| `POST` | `/rag/chat` | Ask questions about an ingested resume |
-
-### Multi-Agent Workflow
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/agents/analyze` | Run the full 4-agent LangGraph workflow |
-
-### Analytics
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/analytics/dashboard` | Aggregate metrics for dashboard charts |
+|---|---|---|
+| POST | `/api/v1/resume/upload` | Upload PDF/DOCX and trigger parsing |
+| POST | `/api/v1/ats/score` | Compute parsing and compliance scores |
+| POST | `/api/v1/jd-matcher/match` | Measure semantic similarity against a Job Description |
+| POST | `/api/v1/llm/improve` | Generate bullet point improvements via Gemini |
+| POST | `/api/v1/llm/rewrite` | Generate full resume rewrites target-matched to JD |
+| POST | `/api/v1/llm/interview-questions` | Generate interview questions matching skill gaps |
+| POST | `/api/v1/llm/cover-letter` | Generate customized cover letters |
+| POST | `/api/v1/rag/ingest` | Chunk and index resume to ChromaDB |
+| POST | `/api/v1/rag/chat` | Chat semantically with the resume |
+| POST | `/api/v1/agents/analyze` | Execute LangGraph agent workflow evaluations |
+| GET | `/api/v1/analytics/dashboard` | Fetch dashboard charts metrics |
 
 ---
 
-## 🏗 Architecture
+## RAG & Multi-Agent Pipelines
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    React + TypeScript Frontend               │
-│         (Vite · TailwindCSS · Recharts · useApi hook)       │
-└───────────────────────┬─────────────────────────────────────┘
-                        │ HTTP / REST
-┌───────────────────────▼─────────────────────────────────────┐
-│                    FastAPI Backend (Python)                  │
-│                                                             │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌───────────┐  │
-│  │  Resume  │  │   ATS    │  │ JD Match │  │  Gemini   │  │
-│  │  Parser  │  │  Engine  │  │ (SBERT)  │  │    LLM    │  │
-│  └──────────┘  └──────────┘  └──────────┘  └───────────┘  │
-│                                                             │
-│  ┌──────────┐  ┌──────────┐  ┌──────────────────────────┐  │
-│  │   RAG    │  │LangGraph │  │   Analytics Service      │  │
-│  │ Pipeline │  │ Workflow │  │  (DB aggregations)       │  │
-│  └─────┬────┘  └────┬─────┘  └──────────────────────────┘  │
-└────────┼────────────┼────────────────────────────────────────┘
-         │            │
-  ┌──────▼──────┐ ┌───▼──────────────────────┐
-  │  ChromaDB   │ │       PostgreSQL          │
-  │ (Vectors)   │ │ Users · Resumes · Reports │
-  └─────────────┘ └──────────────────────────┘
-```
+### RAG Pipeline
+When a resume is ingested, it is segmented using LangChain's `RecursiveCharacterTextSplitter` into 400-character chunks with a 40-character overlap. Chunks are embedded via Google's `models/embedding-001` and saved in ChromaDB under a metadata filter matching `resume_id`. Chat queries fetch the top 3 semantically relevant chunks to build a prompt injected into `gemini-2.5-flash`.
+
+### Multi-Agent StateGraph
+Using LangGraph, the agent system manages state transformations across 5 nodes:
+- **ATS Expert**: Evaluates formatting compliance and structural compatibility.
+- **Recruiter**: Reviews skills against target parameters to issue hiring decisions.
+- **Resume Reviewer**: Audits writing quality, action verbs, and readability.
+- **Career Advisor**: Extrapolates growth opportunities, certifications, and paths.
+- **Consolidation Agent**: Compiles feedbacks into a unified JSON report with strengths, fixes, and a fit percentage.
 
 ---
 
-## 🗄 Database Schema
+## Database Schema
 
 ```
-users ──────────┬──── resumes ──── resume_versions ──┬── ats_reports
-                │                                    └── match_reports
-                ├──── job_descriptions ──────────────── match_reports
-                ├──── chat_sessions
-                └──── agent_reports
+┌─────────────────┐       ┌─────────────────┐       ┌───────────────────┐
+│      users      │       │     resumes     │       │  resume_versions  │
+├─────────────────┤       ├─────────────────┤       ├───────────────────┤
+│ id (PK, UUID)   │1 ─── *│ id (PK, UUID)   │1 ─── *│ id (PK, UUID)     │
+│ email (Unique)  │       │ user_id (FK)    │       │ resume_id (FK)    │
+│ hashed_password │       │ title           │       │ version_number    │
+│ is_active       │       └─────────────────┘       │ file_name         │
+└─────────────────┘                                 │ file_path         │
+         │ 1                                        │ raw_text          │
+         ├──────────────────────────┐               │ structured_data   │
+         │ 1                        │ 1             └───────────────────┘
+┌─────────────────┐        ┌─────────────────┐                │ 1
+│  chat_sessions  │        │  agent_reports  │                ├─────────────────┐
+├─────────────────┤        ├─────────────────┤                │ *               │ *
+│ id (PK, UUID)   │        │ id (PK, UUID)   │        ┌───────────────┐ ┌───────────────┐
+│ user_id (FK)    │        │ user_id (FK)    │        │  ats_reports  │ │ match_reports │
+│ resume_id (FK)  │        │ report_type     │        ├───────────────┤ ├───────────────┤
+│ title           │        │ content (JSON)  │        │ id (PK, UUID) │ │ id (PK, UUID) │
+│ history (JSON)  │        └─────────────────┘        │ version_id(FK)│ │ version_id(FK)│
+└─────────────────┘                                   │ score (Float) │ │ score (Float) │
+                                                      │ findings(JSON)│ │ skills (JSON) │
+                                                      └───────────────┘ └───────────────┘
 ```
+
+For table-by-table column types and schemas, see [Database Schema Specifications](docs/database_schema.md).
 
 ---
 
-## 🧪 Testing
+## Production Deployment
 
-Run the full test suite (31 tests across 8 modules):
+### Backend (Railway)
+1. Link your GitHub repo to a new Railway Service.
+2. Select Dockerfile builder path: `docker/backend/Dockerfile`.
+3. Add environmental variables as specified in [Configuration Reference](configuration_reference.txt).
+4. Auto-migrations will execute on boot.
 
-```bash
-cd backend
-.venv\Scripts\activate   # Windows
-# or: source .venv/bin/activate
+### Frontend (Vercel)
+1. Add a new Vercel Project and select your repository.
+2. Configure **Root Directory** as `frontend` and select **Vite** preset.
+3. Configure environmental variable: `VITE_API_URL` pointing to your Railway backend URL.
 
-pytest -v
-```
-
-### Test Results
-
-```
-tests/test_agent_workflow.py    3 passed   LangGraph nodes + endpoint
-tests/test_analytics.py         2 passed   Dashboard endpoint + DB assertions
-tests/test_ats_service.py       4 passed   Keyword/section/length scoring
-tests/test_jd_matcher.py        3 passed   Cosine similarity + endpoint
-tests/test_llm_service.py       6 passed   All 4 Gemini features
-tests/test_parser_service.py    6 passed   Email/phone/skills/name/sections
-tests/test_rag_service.py       5 passed   Ingest/chat service + endpoints
-tests/test_resume_upload.py     2 passed   PDF upload + validation
-
-========================= 31 passed in ~5s =========================
-```
-
-### Run specific module:
-
-```bash
-pytest tests/test_analytics.py -v
-pytest tests/test_ats_service.py -v
-```
+For complete, detailed instructions on databases, services, and troubleshooting, see the [Production Deployment Guide](docs/deployment.md).
 
 ---
 
-## 🐳 Docker Services
-
-| Service | Image | Port | Description |
-|---------|-------|------|-------------|
-| `frontend` | Custom Nginx | `80` | React app (production build) |
-| `backend` | Custom Python 3.12 | `8080` | FastAPI + Uvicorn |
-| `db` | `postgres:16` | `5432` | Primary relational database |
-| `chromadb` | `chromadb/chroma` | `8000` | Vector embedding store |
+## Security Considerations
+- **CORS Lockdowns**: Restrict `allow_origins` in `backend/app/main.py` to your client domain in production.
+- **Secret Encryption**: Ensure `SECRET_KEY` is a secure, random hex string.
+- **Secrets Scanning**: Never commit credentials to version control. Keep `.env` and SQLite files gitignored.
+- For complete security audit documentation, refer to the [Security Audit Report](docs/security_audit.md).
 
 ---
 
-## 📄 License
-
-This project is licensed under the **MIT License**.
+## Future Enhancements
+- **Multi-Tenant Authentication**: Add JWT authentication with password reset and token blacklists.
+- **Mock-Free Local Testing**: Support offline local embeddings and mock-free testing configurations.
+- **Deep Resume Parsing**: Integrate layout-aware PDF parsers (like OCR/LayoutLM) to extract tabular structures.
 
 ---
 
-<div align="center">
-
-Built with ❤️ using FastAPI · React · LangChain · LangGraph · Google Gemini
-
-⭐ **Star this repository** if you find it useful!
-
-</div>
+## License
+Distributed under the MIT License. See [LICENSE](LICENSE) for more details.

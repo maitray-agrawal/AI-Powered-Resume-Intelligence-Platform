@@ -125,6 +125,16 @@ class ResumeRAGService:
                 "Jane Doe\nEducation: Bachelor of Science in Computer Science, University of Technology",
                 "Experience: Senior Software Engineer at TechCorp (2022 - Present)\n- Built FastAPI APIs and deployed via Docker/Kubernetes"
             ]
+            try:
+                from app.services.mlflow_service import MLflowTrackingService
+                MLflowTrackingService.log_rag_chat(
+                    resume_id=str(resume_id),
+                    query=query,
+                    answer=answer,
+                    source_count=len(mock_sources)
+                )
+            except Exception as mlflow_err:
+                pass
             return answer, mock_sources
 
         try:
@@ -152,6 +162,16 @@ class ResumeRAGService:
             )
             
             response = llm.invoke(prompt)
+            try:
+                from app.services.mlflow_service import MLflowTrackingService
+                MLflowTrackingService.log_rag_chat(
+                    resume_id=str(resume_id),
+                    query=query,
+                    answer=response.content,
+                    source_count=len(sources)
+                )
+            except Exception as mlflow_err:
+                pass
             return response.content, sources
         except Exception as e:
             logger.error(f"RAG Chat error: {e}")
