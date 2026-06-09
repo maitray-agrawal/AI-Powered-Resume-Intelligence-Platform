@@ -17,3 +17,8 @@ test.db
 .DS_Store
 .npm
 *.log
+
+# Uploaded files
+uploads/
+backend/uploads/
+
