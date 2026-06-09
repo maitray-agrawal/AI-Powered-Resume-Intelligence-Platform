@@ -1,0 +1,17 @@
+{
+  "name": "ai-resume-intelligence-platform",
+  "version": "1.0.0",
+  "description": "AI Resume Intelligence Platform - Monorepo",
+  "private": true,
+  "scripts": {
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev:backend": "cd backend && python -m uvicorn app.main:app --reload",
+    "docker:up": "docker compose up --build",
+    "docker:down": "docker compose down",
+    "test:backend": "cd backend && pytest",
+    "install:all": "npm install --prefix frontend && python -m pip install -r backend/requirements.txt"
+  },
+  "workspaces": [
+    "frontend"
+  ]
+}

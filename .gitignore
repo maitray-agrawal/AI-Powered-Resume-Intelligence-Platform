@@ -1,0 +1,19 @@
+# Node dependencies and builds
+node_modules/
+dist/
+.env
+
+# Python virtual environment and cache files
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+test.db
+.db
+
+# System and IDE configurations
+.idea/
+.vscode/
+.DS_Store
+.npm
+*.log
